@@ -4,9 +4,7 @@
 #include "hi_pr/hi_pr.h"
 #include "dimacs_parser.h"
 #include "maxflow_solver.h"
-//#include "maxflow_GT.h"
 
-//class maxflow_GT_param : public maxflow_GT{
 class maxflow_GT_param : public maxflow_solver, public dimacs_parser_callback{
  public:
     hi_pr g;

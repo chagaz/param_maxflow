@@ -26,77 +26,77 @@
 
 /* FIFO queue for BFS macros */
 /*
-#define qInit() \
-{\
-qHead = qTail = queue;\
-}
+  #define qInit() \
+  {\
+  qHead = qTail = queue;\
+  }
 
-#define qEmpty ( qHead == qTail )
+  #define qEmpty ( qHead == qTail )
 
-#define qEnqueue(i) \
-{\
-*qTail = i;\
-if ( qTail == qLast ) qTail = queue;\
-else qTail++;\
-}
+  #define qEnqueue(i) \
+  {\
+  *qTail = i;\
+  if ( qTail == qLast ) qTail = queue;\
+  else qTail++;\
+  }
 
-#define qDequeue(i) \
-{\
-i = *qHead;\
-if ( qHead == qLast ) qHead = queue;\
-else qHead++;\
-}
+  #define qDequeue(i) \
+  {\
+  i = *qHead;\
+  if ( qHead == qLast ) qHead = queue;\
+  else qHead++;\
+  }
 */
 
 /* 
-bucket macros:
-bucket's active node list is singly-linked
-operations aAdd, aRemove (from the front)
-bucket's inactive list is doubly-linked
-operations iAdd, iDelete (from arbitrary position)
+   bucket macros:
+   bucket's active node list is singly-linked
+   operations aAdd, aRemove (from the front)
+   bucket's inactive list is doubly-linked
+   operations iAdd, iDelete (from arbitrary position)
 */
 
-#define aAdd(l,i)\
-{\
-	i->bNext = l->firstActive;\
-	l->firstActive = i;\
-	i_dist = i->d;\
-	if (i_dist < aMin)\
-	aMin = i_dist;\
-	if (i_dist > aMax)\
-	aMax = i_dist;\
-	if (dMax < aMax)\
-	dMax = aMax;\
-}
+#define aAdd(l,i)				\
+  {						\
+    i->bNext = l->firstActive;			\
+    l->firstActive = i;				\
+    i_dist = i->d;				\
+    if (i_dist < aMin)				\
+      aMin = i_dist;				\
+    if (i_dist > aMax)				\
+      aMax = i_dist;				\
+    if (dMax < aMax)				\
+      dMax = aMax;				\
+  }
 
 /* i must be the first element */
-#define aRemove(l,i)\
-{\
-	l->firstActive = i->bNext;\
-}
+#define aRemove(l,i)				\
+  {						\
+    l->firstActive = i->bNext;			\
+  }
 
-#define iAdd(l,i)\
-{\
-	i_next = l->firstInactive;\
-	i->bNext = i_next;\
-	i->bPrev = sentinelNode;\
-	i_next->bPrev = i;\
-	l->firstInactive = i;\
-}
+#define iAdd(l,i)				\
+  {						\
+    i_next = l->firstInactive;			\
+    i->bNext = i_next;				\
+    i->bPrev = sentinelNode;			\
+    i_next->bPrev = i;				\
+    l->firstInactive = i;			\
+  }
 
-#define iDelete(l,i)\
-{\
-	i_next = i->bNext;\
-	if (l->firstInactive == i) {\
-	l->firstInactive = i_next;\
-	i_next->bPrev = sentinelNode;\
-	}\
-  else {\
-  i_prev = i->bPrev;\
-  i_prev->bNext = i_next;\
-  i_next->bPrev = i_prev;\
-}\
-}
+#define iDelete(l,i)				\
+  {						\
+    i_next = i->bNext;				\
+    if (l->firstInactive == i) {		\
+      l->firstInactive = i_next;		\
+      i_next->bPrev = sentinelNode;		\
+    }						\
+    else {					\
+      i_prev = i->bPrev;			\
+      i_prev->bNext = i_next;			\
+      i_next->bPrev = i_prev;			\
+    }						\
+  }
 
 /* allocate datastructures, initialize related variables */
 
@@ -106,37 +106,38 @@ hi_pr::hi_pr(){
 int hi_pr::allocDS( )
 
 {
-	nm = ALPHA * n + m;
-	/*
-	queue = (node**) calloc ( n, sizeof (node*) );
-	if ( queue == NULL ) return ( 1 );
-	qLast = queue + n - 1;
-	qInit();
-	*/
-	buckets = (bucket*) calloc ( n+2, sizeof (bucket) );
-	if ( buckets == NULL ) return ( 1 );
+  // std::cout << "hi_pr::allocDS()" << std::endl;
+  nm = ALPHA * n + m;
+  /*
+    queue = (node**) calloc ( n, sizeof (node*) );
+    if ( queue == NULL ) return ( 1 );
+    qLast = queue + n - 1;
+    qInit();
+  */
+  buckets = (bucket*) calloc ( n+2, sizeof (bucket) );
+  if ( buckets == NULL ) return ( 1 );
 
-	sentinelNode = nodes + n;
-	sentinelNode->first = arcs + 2*m;
+  sentinelNode = nodes + n;
+  sentinelNode->first = arcs + 2*m;
 
-	return ( 0 );
+  return ( 0 );
 
 } /* end of allocate */
 
 
 void hi_pr::init( )
-
 {
+  // std::cout << "hi_pr::init()" << std::endl;
   node  *i;        /* current node */
   int overflowDetected;
   bucket *l;
   arc *a;
-// #ifdef EXCESS_TYPE_LONG
-//   double testExcess;
-// #endif
-// #ifndef OLD_INIT
-//   unsigned long delta;
-// #endif
+  // #ifdef EXCESS_TYPE_LONG
+  //   double testExcess;
+  // #endif
+  // #ifndef OLD_INIT
+  //   unsigned long delta;
+  // #endif
 
   double testExcess;
   double delta;
@@ -146,9 +147,10 @@ void hi_pr::init( )
   forAllNodes(i) {
     i->excess = 0;
     i->current = i->first;
-    forAllArcs(i, a)
+    forAllArcs(i, a){
       a->resCap = cap[a-arcs];
-    // std::cout << "resCap: " << cap[a-arcs] << std::endl;
+      // std::cout << "resCap: " << cap[a-arcs] << std::endl;
+    }
   }
   
   //AS: ?error: l=buckets + n is not initialized, and globalUpdate can go up to n, which must be sentinelNode
@@ -158,18 +160,18 @@ void hi_pr::init( )
   }
   
   overflowDetected = 0;
-// #ifdef EXCESS_TYPE_LONG
-//   testExcess = 0;
-//   forAllArcs(source,a) {
-//     if (a->head != source) {
-//       testExcess += a->resCap;
-//     }
-//   }
-//   if (testExcess > MAXLONG) {
-//     printf("c WARNING: excess overflow. See README for details.\nc\n");
-//     overflowDetected = 1;
-//   }
-// #endif
+  // #ifdef EXCESS_TYPE_LONG
+  //   testExcess = 0;
+  //   forAllArcs(source,a) {
+  //     if (a->head != source) {
+  //       testExcess += a->resCap;
+  //     }
+  //   }
+  //   if (testExcess > MAXLONG) {
+  //     printf("c WARNING: excess overflow. See README for details.\nc\n");
+  //     overflowDetected = 1;
+  //   }
+  // #endif
 #ifdef OLD_INIT
   source -> excess = MAXLONG;
 #else
@@ -185,7 +187,10 @@ void hi_pr::init( )
 	// std::cout << "delta: " << delta << std::endl;
 	a -> resCap -= delta;
 	(a -> rev) -> resCap += delta;
+	// std::cout << "resCap: " << a->resCap << std::endl;
+	// std::cout << "revResCap: " << a -> rev -> resCap  << std::endl;
 	a->head->excess += delta;
+	// std::cout << "a->head->excess: " << a -> head -> excess  << std::endl;
       }
     }
   }
@@ -228,118 +233,147 @@ void hi_pr::init( )
 void hi_pr::checkMax()
 
 {
-	bucket *l;
+  // std::cout << "hi_pr::checkMax()" << std::endl;
+  bucket *l;
 
-	for (l = buckets + dMax + 1; l < buckets + n; l++) {
-		assert(l->firstActive == sentinelNode);
-		assert(l->firstInactive == sentinelNode);
-	}
+  for (l = buckets + dMax + 1; l < buckets + n; l++) {
+    assert(l->firstActive == sentinelNode);
+    assert(l->firstInactive == sentinelNode);
+  }
 }
+
+
+void hi_pr::multiply(float lbd){
+  // std::cout << "hi_pr::multiply()" << std::endl;
+  /* Multiply the capacities by the coefficient lbd */
+  node *node_i;
+  arc  *edge_a;
+  int counter = 0;
+  forAllNodes(node_i){
+    forAllArcs(node_i, edge_a){
+	counter++;
+	edge_a->resCap *= lbd;
+	// edge_a->rev->resCap *= lbd;
+	// std::cout << edge_a->resCap << "\t";
+	// std::cout << edge_a->rev->resCap << "\t";
+    }
+  }
+  // std::cout << "number of edge capacities updated in multiplication: " << counter << std::endl;
+  // std::cout << std::endl;
+  for (int i=0; i<2*m; i++){
+    cap[i] *= lbd;
+  }
+  // std::cout << "total number of edges: " << m*2 << std::endl;
+}
+
+
+
 
 /* global update via backward breadth first search from the sink */
 
 void hi_pr::globalUpdate ()
 
 {
+  // std::cout << "hi_pr::globalUpdate()" << std::endl;
 
-	node  *i, *j;       /* node pointers */
-	arc   *a;           /* current arc pointers  */
-	bucket *l, *jL;          /* bucket */
-	long curDist, jD;
-	long state;
+  node  *i, *j;       /* node pointers */
+  arc   *a;           /* current arc pointers  */
+  bucket *l, *jL;          /* bucket */
+  long curDist, jD;
+  long state;
 
+  updateCnt ++;
 
-	updateCnt ++;
+  /* initialization */
+  forAllNodes(i)
+    i -> d = n;
+  sink -> d = 0;
 
-	/* initialization */
+  for (l = buckets; l <= buckets + dMax; l++) {
+    l -> firstActive   = sentinelNode;
+    l -> firstInactive  = sentinelNode;
+  }
 
-	forAllNodes(i)
-		i -> d = n;
-	sink -> d = 0;
+  dMax = aMax = 0;
+  aMin = n;
 
-	for (l = buckets; l <= buckets + dMax; l++) {
-		l -> firstActive   = sentinelNode;
-		l -> firstInactive  = sentinelNode;
+  /* breadth first search */
+  // add sink to bucket zero
+
+  iAdd(buckets, sink);
+  for (curDist = 0; 1; curDist++) {
+
+    state = 0;
+    l = buckets + curDist;
+    jD = curDist + 1;
+    jL = l + 1;
+    /*
+      jL -> firstActive   = sentinelNode;
+      jL -> firstInactive  = sentinelNode;
+    */
+
+    if ((l->firstActive == sentinelNode) && 
+	(l->firstInactive == sentinelNode))
+      break;
+
+    while (1) {
+
+      switch (state) {
+      case 0: 
+	i = l->firstInactive;
+	state = 1;
+	break;
+      case 1:
+	i = i->bNext;
+	break;
+      case 2:
+	i = l->firstActive;
+	state = 3;
+	break;
+      case 3:
+	i = i->bNext;
+	break;
+      default: 
+	assert(0);
+	break;
+      }
+
+      if (i == sentinelNode) {
+	if (state == 1) {
+	  state = 2;
+	  continue;
 	}
-
-	dMax = aMax = 0;
-	aMin = n;
-
-	/* breadth first search */
-
-	// add sink to bucket zero
-
-	iAdd(buckets, sink);
-	for (curDist = 0; 1; curDist++) {
-
-		state = 0;
-		l = buckets + curDist;
-		jD = curDist + 1;
-		jL = l + 1;
-		/*
-		jL -> firstActive   = sentinelNode;
-		jL -> firstInactive  = sentinelNode;
-		*/
-
-		if ((l->firstActive == sentinelNode) && 
-			(l->firstInactive == sentinelNode))
-			break;
-
-		while (1) {
-
-			switch (state) {
-	  case 0: 
-		  i = l->firstInactive;
-		  state = 1;
-		  break;
-	  case 1:
-		  i = i->bNext;
-		  break;
-	  case 2:
-		  i = l->firstActive;
-		  state = 3;
-		  break;
-	  case 3:
-		  i = i->bNext;
-		  break;
-	  default: 
-		  assert(0);
-		  break;
-			}
-
-			if (i == sentinelNode) {
-				if (state == 1) {
-					state = 2;
-					continue;
-				}
-				else {
-					assert(state == 3);
-					break;
-				}
-			}
-
-			/* scanning arcs incident to node i */
-			forAllArcs(i,a) {
-				if (a->rev->resCap > 0 ) {
-					j = a->head;
-					if (j->d == n) {
-						j->d = jD;
-						j->current = j->first;
-						if (jD > dMax) dMax = jD;
-
-						if (j->excess > 0) {
-							/* put into active list */
-							aAdd(jL,j);
-						}
-						else {
-							/* put into inactive list */
-							iAdd(jL,j);
-						}
-					}
-				}
-			} /* node i is scanned */ 
-		}
+	else {
+	  assert(state == 3);
+	  break;
 	}
+      }
+
+      /* scanning arcs incident to node i */
+      // std::cout << "node " << i << " ";
+      forAllArcs(i,a) {
+	// std::cout << "< " << a->rev->resCap << " ";
+	if (a->rev->resCap > 0 ) {
+	  j = a->head;
+	  if (j->d == n) {
+	    j->d = jD;
+	    j->current = j->first;
+	    if (jD > dMax) dMax = jD;
+
+	    if (j->excess > 0) {
+	      /* put into active list */
+	      aAdd(jL,j);
+	    }
+	    else {
+	      /* put into inactive list */
+	      iAdd(jL,j);
+	    }
+	  }
+	}
+      } /* node i is scanned */ 
+      // std::cout << std::endl;
+    }
+  }
 
 } /* end of global update */
 
@@ -347,245 +381,248 @@ void hi_pr::globalUpdate ()
 /* second stage -- preflow to flow */
 void hi_pr::stageTwo ( )
 /*
-do dsf in the reverse flow graph from nodes with excess
-cancel cycles if found
-return excess flow in topological order
+  do dsf in the reverse flow graph from nodes with excess
+  cancel cycles if found
+  return excess flow in topological order
 */
 
 /*
-i->d is used for dfs labels 
-i->bNext is used for topological order list
-buckets[i-nodes]->firstActive is used for DSF tree
+  i->d is used for dfs labels 
+  i->bNext is used for topological order list
+  buckets[i-nodes]->firstActive is used for DSF tree
 */
 
 {
-	node *i, *j, *tos, *bos, *restart, *r;
-	arc *a;
-	double delta;
+  // std::cout << "hi_pr::stageTwo()" << std::endl;
+  node *i, *j, *tos, *bos, *restart, *r;
+  arc *a;
+  double delta;
 
-	/* deal with self-loops */
-	forAllNodes(i) {
-		forAllArcs(i,a)
-			if ( a -> head == i ) {
-				a -> resCap = cap[a - arcs];
-			}
-	}
+  /* deal with self-loops */
+  forAllNodes(i) {
+    forAllArcs(i,a)
+      if ( a -> head == i ) {
+	a -> resCap = cap[a - arcs];
+      }
+  }
 
-	/* initialize */
-	tos = bos = NULL;
-	forAllNodes(i) {
-		i -> d = WHITE;
-		//    buckets[i-nodes].firstActive = NULL;
-		buckets[i-nodes].firstActive = sentinelNode;
-		i -> current = i -> first;
-	}
+  /* initialize */
+  tos = bos = NULL;
+  forAllNodes(i) {
+    i -> d = WHITE;
+    //    buckets[i-nodes].firstActive = NULL;
+    buckets[i-nodes].firstActive = sentinelNode;
+    i -> current = i -> first;
+  }
 
-	/* eliminate flow cycles, topologicaly order vertices */
-	forAllNodes(i)
-		if (( i -> d == WHITE ) && ( i -> excess > 0 ) &&
-			( i != source ) && ( i != sink )) {
-				r = i;
-				r -> d = GREY;
-				do {
-					for ( ; i->current != (i+1)->first; i->current++) {
-						a = i -> current;
-						if (( cap[a - arcs] == 0 ) && ( a -> resCap > 0 )) { 
-							j = a -> head;
-							if ( j -> d == WHITE ) {
-								/* start scanning j */
-								j -> d = GREY;
-								buckets[j-nodes].firstActive = i;
-								i = j;
-								break;
-							}
-							else
-								if ( j -> d == GREY ) {
-									/* find minimum flow on the cycle */
-									delta = a -> resCap;
-									while ( 1 ) {
-										delta = min ( delta, j -> current -> resCap );
-										if ( j == i )
-											break;
-										else
-											j = j -> current -> head;
-									}
-
-									/* remove delta flow units */
-									j = i;
-									while ( 1 ) {
-										a = j -> current;
-										a -> resCap -= delta;
-										a -> rev -> resCap += delta;
-										j = a -> head;
-										if ( j == i )
-											break;
-									}
-
-									/* backup DFS to the first saturated arc */
-									restart = i;
-									for ( j = i -> current -> head; j != i; j = a -> head ) {
-										a = j -> current;
-										if (( j -> d == WHITE ) || ( a -> resCap == 0 )) {
-											j -> current -> head -> d = WHITE;
-											if ( j -> d != WHITE )
-												restart = j;
-										}
-									}
-
-									if ( restart != i ) {
-										i = restart;
-										i->current++;
-										break;
-									}
-								}
-						}
-					}
-
-					if (i->current == (i+1)->first) {
-						/* scan of i complete */
-						i -> d = BLACK;
-						if ( i != source ) {
-							if ( bos == NULL ) {
-								bos = i;
-								tos = i;
-							}
-							else {
-								i -> bNext = tos;
-								tos = i;
-							}
-						}
-
-						if ( i != r ) {
-							i = buckets[i-nodes].firstActive;
-							i->current++;
-						}
-						else
-							break;
-					}
-				} while ( 1 );
+  /* eliminate flow cycles, topologicaly order vertices */
+  forAllNodes(i)
+    if (( i -> d == WHITE ) && ( i -> excess > 0 ) &&
+	( i != source ) && ( i != sink )) {
+      r = i;
+      r -> d = GREY;
+      do {
+	for ( ; i->current != (i+1)->first; i->current++) {
+	  a = i -> current;
+	  if (( cap[a - arcs] == 0 ) && ( a -> resCap > 0 )) { 
+	    j = a -> head;
+	    if ( j -> d == WHITE ) {
+	      /* start scanning j */
+	      j -> d = GREY;
+	      buckets[j-nodes].firstActive = i;
+	      i = j;
+	      break;
+	    }
+	    else
+	      if ( j -> d == GREY ) {
+		/* find minimum flow on the cycle */
+		delta = a -> resCap;
+		while ( 1 ) {
+		  delta = min ( delta, j -> current -> resCap );
+		  if ( j == i )
+		    break;
+		  else
+		    j = j -> current -> head;
 		}
 
-
-		/* return excesses */
-		/* note that sink is not on the stack */
-		if ( bos != NULL ) {
-			for ( i = tos; i != bos; i = i -> bNext ) {
-				a = i -> first;
-				while ( i -> excess > 0 ) {
-					if (( cap[a - arcs] == 0 ) && ( a -> resCap > 0 )) {
-						if (a->resCap < i->excess)
-							delta = a->resCap;
-						else
-							delta = i->excess;
-						a -> resCap -= delta;
-						a -> rev -> resCap += delta;
-						i -> excess -= delta;
-						a -> head -> excess += delta;
-					}
-					a++;
-				}
-			}
-			/* now do the bottom */
-			i = bos;
-			a = i -> first;
-			while ( i -> excess > 0 ) {
-				if (( cap[a - arcs] == 0 ) && ( a -> resCap > 0 )) {
-					if (a->resCap < i->excess)
-						delta = a->resCap;
-					else
-						delta = i->excess;
-					a -> resCap -= delta;
-					a -> rev -> resCap += delta;
-					i -> excess -= delta;
-					a -> head -> excess += delta;
-				}
-				a++;
-			}
+		/* remove delta flow units */
+		j = i;
+		while ( 1 ) {
+		  a = j -> current;
+		  a -> resCap -= delta;
+		  a -> rev -> resCap += delta;
+		  j = a -> head;
+		  if ( j == i )
+		    break;
 		}
+
+		/* backup DFS to the first saturated arc */
+		restart = i;
+		for ( j = i -> current -> head; j != i; j = a -> head ) {
+		  a = j -> current;
+		  if (( j -> d == WHITE ) || ( a -> resCap == 0 )) {
+		    j -> current -> head -> d = WHITE;
+		    if ( j -> d != WHITE )
+		      restart = j;
+		  }
+		}
+
+		if ( restart != i ) {
+		  i = restart;
+		  i->current++;
+		  break;
+		}
+	      }
+	  }
+	}
+
+	if (i->current == (i+1)->first) {
+	  /* scan of i complete */
+	  i -> d = BLACK;
+	  if ( i != source ) {
+	    if ( bos == NULL ) {
+	      bos = i;
+	      tos = i;
+	    }
+	    else {
+	      i -> bNext = tos;
+	      tos = i;
+	    }
+	  }
+
+	  if ( i != r ) {
+	    i = buckets[i-nodes].firstActive;
+	    i->current++;
+	  }
+	  else
+	    break;
+	}
+      } while ( 1 );
+    }
+
+
+  /* return excesses */
+  /* note that sink is not on the stack */
+  if ( bos != NULL ) {
+    for ( i = tos; i != bos; i = i -> bNext ) {
+      a = i -> first;
+      while ( i -> excess > 0 ) {
+	if (( cap[a - arcs] == 0 ) && ( a -> resCap > 0 )) {
+	  if (a->resCap < i->excess)
+	    delta = a->resCap;
+	  else
+	    delta = i->excess;
+	  a -> resCap -= delta;
+	  a -> rev -> resCap += delta;
+	  i -> excess -= delta;
+	  a -> head -> excess += delta;
+	}
+	a++;
+      }
+    }
+    /* now do the bottom */
+    i = bos;
+    a = i -> first;
+    while ( i -> excess > 0 ) {
+      if (( cap[a - arcs] == 0 ) && ( a -> resCap > 0 )) {
+	if (a->resCap < i->excess)
+	  delta = a->resCap;
+	else
+	  delta = i->excess;
+	a -> resCap -= delta;
+	a -> rev -> resCap += delta;
+	i -> excess -= delta;
+	a -> head -> excess += delta;
+      }
+      a++;
+    }
+  }
 }
 
 
 /* gap relabeling */
 //
 int hi_pr::gap(bucket *emptyB){
+  // std::cout << "hi_pr::gap()" << std::endl;
 
-	bucket *l;
-	node  *i; 
-	long  r;           /* index of the bucket before l  */
-	int   cc;          /* cc = 1 if no nodes with positive excess before
-					   the gap */
+  bucket *l;
+  node  *i; 
+  long  r;           /* index of the bucket before l  */
+  int   cc;          /* cc = 1 if no nodes with positive excess before
+			the gap */
 
-	gapCnt ++;
-	r = ( emptyB - buckets ) - 1;
+  gapCnt ++;
+  r = ( emptyB - buckets ) - 1;
 
-	/* set labels of nodes beyond the gap to "infinity" */
-	for ( l = emptyB + 1; l <= buckets + dMax; l ++ ) {
-		// this does nothing for high level selection
+  /* set labels of nodes beyond the gap to "infinity" */
+  for ( l = emptyB + 1; l <= buckets + dMax; l ++ ) {
+    // this does nothing for high level selection
 #ifdef WAVE_INIT
-		for (i = l -> firstActive; i != sentinelNode; i = i -> bNext) {
-		i -> d = n;
-		gNodeCnt++;
-		}
-		l -> firstActive = sentinelNode;
+    for (i = l -> firstActive; i != sentinelNode; i = i -> bNext) {
+      i -> d = n;
+      gNodeCnt++;
+    }
+    l -> firstActive = sentinelNode;
 #endif
-		for ( i = l -> firstInactive; i != sentinelNode; i = i -> bNext ) {
-			i -> d = n;
-			gNodeCnt ++;
-		}
+    for ( i = l -> firstInactive; i != sentinelNode; i = i -> bNext ) {
+      i -> d = n;
+      gNodeCnt ++;
+    }
 
-		l -> firstInactive = sentinelNode;
-	}
+    l -> firstInactive = sentinelNode;
+  }
 
-	cc = ( aMin > r ) ? 1 : 0;
+  cc = ( aMin > r ) ? 1 : 0;
 
-	dMax = r;
-	aMax = r;
+  dMax = r;
+  aMax = r;
 
-	return ( cc );
+  return ( cc );
 
 }
 
 /*--- relabelling node i */
 
 long hi_pr::relabel(node *i){/* node to relabel */
+  // std::cout << "hi_pr::relabel()" << std::endl;
+  
+  node  *j;
+  long  minD;     /* minimum d of a node reachable from i */
+  arc   *minA;    /* an arc which leads to the node with minimal d */
+  arc   *a;
 
-	node  *j;
-	long  minD;     /* minimum d of a node reachable from i */
-	arc   *minA;    /* an arc which leads to the node with minimal d */
-	arc   *a;
+  assert(i->excess > 0);
 
-	assert(i->excess > 0);
+  relabelCnt++;
+  workSinceUpdate += BETA;
 
-	relabelCnt++;
-	workSinceUpdate += BETA;
+  i->d = minD = n;
+  minA = NULL;
 
-	i->d = minD = n;
-	minA = NULL;
+  /* find the minimum */
+  forAllArcs(i,a) {
+    workSinceUpdate++;
+    if (a -> resCap > 0) {
+      j = a -> head;
+      if (j->d < minD) {
+	minD = j->d;
+	minA = a;
+      }
+    }
+  }
 
-	/* find the minimum */
-	forAllArcs(i,a) {
-		workSinceUpdate++;
-		if (a -> resCap > 0) {
-			j = a -> head;
-			if (j->d < minD) {
-				minD = j->d;
-				minA = a;
-			}
-		}
-	}
+  minD++;
 
-	minD++;
+  if (minD < n) {
 
-	if (minD < n) {
+    i->d = minD;
+    i->current = minA;
 
-		i->d = minD;
-		i->current = minA;
+    if (dMax < minD) dMax = minD;
 
-		if (dMax < minD) dMax = minD;
+  } /* end of minD < n */
 
-	} /* end of minD < n */
-
-	return ( minD );
+  return ( minD );
 
 } /* end of relabel */
 
@@ -593,91 +630,98 @@ long hi_pr::relabel(node *i){/* node to relabel */
 /* discharge: push flow out of i until i becomes inactive */
 
 void hi_pr::discharge (node  *i){
+  // std::cout << "hi_pr::discharge()" << std::endl;
+  // std::cout << "node " << i << " ";
 
-	node  *j;                 /* sucsessor of i */
-	long  jD;                 /* d of the next bucket */
-	bucket *lj;               /* j's bucket */
-	bucket *l;                /* i's bucket */
-	arc   *a;                 /* current arc (i,j) */
-	double  delta;
-	arc *stopA;
+  node  *j;                 /* sucsessor of i */
+  long  jD;                 /* d of the next bucket */
+  bucket *lj;               /* j's bucket */
+  bucket *l;                /* i's bucket */
+  arc   *a;                 /* current arc (i,j) */
+  double  delta;
+  arc *stopA;
 
-	assert(i->excess > 0);
-	assert(i != sink);
-	do {
+  assert(i->excess > 0);
+  assert(i != sink);
+  // std::cout << "  i: " << i->index << "\n";
+  do {
 
-		jD = i->d - 1;
-		l = buckets + i->d;
+    jD = i->d - 1;
+    l = buckets + i->d;
 
-		/* scanning arcs outgoing from  i  */
-		for (a = i->current, stopA = (i+1)->first; a != stopA; a++) {
-			if (a -> resCap > 0) {
-				j = a -> head;
+    /* scanning arcs outgoing from  i  */
+    for (a = i->current, stopA = (i+1)->first; a != stopA; a++) {
+      if (a -> resCap > 0) {
+	// std::cout << "> " << a->resCap << "[" << a->gCapIdx << ", " << a->rev->gCapIdx << "]" << "\t";
+	j = a -> head;
 
-				if (j->d == jD) {
-					pushCnt ++;
-					if (a->resCap < i->excess)
-						delta = a->resCap;
-					else
-						delta = i->excess;
-					a->resCap -= delta;
-					a->rev->resCap += delta;
+	if (j->d == jD) {
+	  pushCnt ++;
+	  if (a->resCap < i->excess)
+	    delta = a->resCap;
+	  else
+	    delta = i->excess;
+	  a->resCap -= delta;
+	  a->rev->resCap += delta;
+	  // std::cout << "--- " << a->resCap << "\n";
 
-					if (j != sink) {
+	  if (j != sink) {
 
-						lj = buckets + jD;
+	    lj = buckets + jD;
 
-						if (j->excess == 0) {
-							/* remove j from inactive list */
-							iDelete(lj,j);
-							/* add j to active list */
-							aAdd(lj,j);
-						}
-					}
+	    if (j->excess == 0) {
+	      /* remove j from inactive list */
+	      iDelete(lj,j);
+	      /* add j to active list */
+	      aAdd(lj,j);
+	    }
+	  }
 
-					j -> excess += delta;
-					i -> excess -= delta;
+	  j -> excess += delta;
+	  i -> excess -= delta;
 
-					if (i->excess == 0) break;
+	  if (i->excess == 0) break;
 
-				} /* j belongs to the next bucket */
-			} /* a  is not saturated */
-		} /* end of scanning arcs from  i */
+	} /* j belongs to the next bucket */
+      } /* a  is not saturated */
+    } /* end of scanning arcs from  i */
+    // std::cout << std::endl;
 
-		if (a == stopA) {
-			/* i must be relabeled */
-			relabel (i);
-			if (i->d == n) break;
-			if ((l -> firstActive == sentinelNode) && (l -> firstInactive == sentinelNode)){
-				gap(l);
-			};
-			if (i->d == n) break;
-		}
-		else {
-			/* i no longer active */
-			i->current = a;
-			/* put i on inactive list */
-			iAdd(l,i);
-			break;
-		}
-	} while (1);
+    if (a == stopA) {
+      /* i must be relabeled */
+      relabel (i);
+      if (i->d == n) break;
+      if ((l -> firstActive == sentinelNode) && (l -> firstInactive == sentinelNode)){
+	gap(l);
+      };
+      if (i->d == n) break;
+    }
+    else {
+      /* i no longer active */
+      i->current = a;
+      /* put i on inactive list */
+      iAdd(l,i);
+      break;
+    }
+  } while (1);
 }
 
 // go from higher to lower buckets, push flow
 void hi_pr::wave() {
+  // std::cout << "hi_pr::wave()" << std::endl;
+  
+  node   *i;
+  bucket  *l;
 
-	node   *i;
-	bucket  *l;
+  for (l = buckets + aMax; l > buckets; l--) {
+    for (i = l->firstActive; i != sentinelNode; i = l->firstActive) {
+      aRemove(l,i);
 
-	for (l = buckets + aMax; l > buckets; l--) {
-		for (i = l->firstActive; i != sentinelNode; i = l->firstActive) {
-			aRemove(l,i);
+      assert(i->excess > 0);
+      discharge (i);
 
-			assert(i->excess > 0);
-			discharge (i);
-
-		}
-	}
+    }
+  }
 }
 
 
@@ -685,6 +729,8 @@ void hi_pr::wave() {
 
 void hi_pr::stageOne ( )
 {
+  // std::cout << "hi_pr::stageOne()" << std::endl;
+
   node   *i;
   bucket  *l;             /* current bucket */
 
@@ -699,7 +745,7 @@ void hi_pr::stageOne ( )
 #endif  
 
   /* main loop */
-  std::cout << "aMax: " << aMax << "\taMin: " << aMin << std::endl;
+  // std::cout << "aMax: " << aMax << "\taMin: " << aMin << std::endl;
   while ( aMax >= aMin ) {
     l = buckets + aMax;
     i = l->firstActive;
@@ -726,183 +772,188 @@ void hi_pr::stageOne ( )
   } /* end of the main loop */
   
   flow = sink->excess + flow0;
-  std::cout << "excess: " << sink->excess << "\tflow0: " << flow0 << std::endl;
-  std::cout << "up flow: " << flow << std::endl;
+  // std::cout << "excess: " << sink->excess << "\tflow0: " << flow0 << std::endl;
+  // std::cout << "up flow: " << flow << std::endl;
 } 
 
 
 int hi_pr::main(int argc, char *argv[]){
+  // std::cout << "hi_pr::main()" << std::endl;
 
 #if (defined(PRINT_FLOW) || defined(CHECK_SOLUTION))
-	node *i;
-	arc *a;
+  node *i;
+  arc *a;
 #endif
 
 #ifdef PRINT_FLOW
-	long ni, na;
+  long ni, na;
 #endif
 #ifdef PRINT_CUT
-	node *j;
+  node *j;
 #endif
-	int  cc;
+  int  cc;
 #ifdef CHECK_SOLUTION
-	double sum;
-	bucket *l;
+  double sum;
+  bucket *l;
 #endif
 
 
-	if (argc > 2) {
-		printf("Usage: %s [update frequency]\n", argv[0]);
-		exit(1);
-	}
+  if (argc > 2) {
+    printf("Usage: %s [update frequency]\n", argv[0]);
+    exit(1);
+  }
 
-	if (argc < 2)
-		globUpdtFreq = GLOB_UPDT_FREQ;
-	else
-		globUpdtFreq = (float) atof(argv[1]);
+  if (argc < 2)
+    globUpdtFreq = GLOB_UPDT_FREQ;
+  else
+    globUpdtFreq = (float) atof(argv[1]);
 
-	printf("c\nc hi_pr version 3.6\n");
-	printf("c Copyright C by IG Systems, igsys@eclipse.net\nc\n");
+  printf("c\nc hi_pr version 3.6\n");
+  printf("c Copyright C by IG Systems, igsys@eclipse.net\nc\n");
 
-	parse( &n, &m, &nodes, &arcs, &cap, &source, &sink, &nMin );
+  parse( &n, &m, &nodes, &arcs, &cap, &source, &sink, &nMin );
 
-	printf("c nodes:       %10ld\nc arcs:        %10ld\nc\n", n, m);
+  printf("c nodes:       %10ld\nc arcs:        %10ld\nc\n", n, m);
 
-	cc = allocDS();
-	if ( cc ) { fprintf ( stderr, "Allocation error\n"); exit ( 1 ); }
+  cc = allocDS();
+  if ( cc ) { fprintf ( stderr, "Allocation error\n"); exit ( 1 ); }
 
-	t = timer();
-	t2 = t;
+  t = timer();
+  t2 = t;
 
-	init();
-	stageOne ( );
+  init();
+  stageOne ( );
 
-	t2 = timer() - t2;
+  t2 = timer() - t2;
 
-	printf ("c flow:       %12.01f\n", flow);
+  printf ("c flow:       %12.01f\n", flow);
 
 #ifndef CUT_ONLY
-	stageTwo ( );
+  stageTwo ( );
 
-	t = timer() - t;
+  t = timer() - t;
 
-	printf ("c time:        %10.2f\n", t);
+  printf ("c time:        %10.2f\n", t);
 
 #endif
 
-	printf ("c cut tm:      %10.2f\n", t2);
+  printf ("c cut tm:      %10.2f\n", t2);
 
 #ifdef CHECK_SOLUTION
 
-	/* check if you have a flow (pseudoflow) */
-	/* check arc flows */
-	forAllNodes(i) {
-		forAllArcs(i,a) {
-			if (cap[a - arcs] > 0) /* original arc */
-				if ((a->resCap + a->rev->resCap != cap[a - arcs]) 
-					|| (a->resCap < 0)
-					|| (a->rev->resCap < 0)) {
-						printf("ERROR: bad arc flow\n");
-						exit(2);
-				}
-		}
+  /* check if you have a flow (pseudoflow) */
+  /* check arc flows */
+  forAllNodes(i) {
+    forAllArcs(i,a) {
+      if (cap[a - arcs] > 0) /* original arc */
+	if ((a->resCap + a->rev->resCap != cap[a - arcs]) 
+	    || (a->resCap < 0)
+	    || (a->rev->resCap < 0)) {
+	  printf("ERROR: bad arc flow\n");
+	  exit(2);
 	}
+    }
+  }
 
-	/* check conservation */
-	forAllNodes(i)
-		if ((i != source) && (i != sink)) {
+  /* check conservation */
+  forAllNodes(i)
+    if ((i != source) && (i != sink)) {
 #ifdef CUT_ONLY
-			if (i->excess < 0) {
-				printf("ERROR: nonzero node excess\n");
-				exit(2);
-			}
+      if (i->excess < 0) {
+	printf("ERROR: nonzero node excess\n");
+	exit(2);
+      }
 #else
-			if (i->excess != 0) {
-				printf("ERROR: nonzero node excess\n");
-				exit(2);
-			}
+      if (i->excess != 0) {
+	printf("ERROR: nonzero node excess\n");
+	exit(2);
+      }
 #endif
 
-			sum = 0;
-			forAllArcs(i,a) {
-				if (cap[a - arcs] > 0) /* original arc */
-					sum -= cap[a - arcs] - a->resCap;
-				else
-					sum += a->resCap;
-			}
+      sum = 0;
+      forAllArcs(i,a) {
+	if (cap[a - arcs] > 0) /* original arc */
+	  sum -= cap[a - arcs] - a->resCap;
+	else
+	  sum += a->resCap;
+      }
 
-			if (i->excess != sum) {
-				printf("ERROR: conservation constraint violated\n");
-				exit(2);
-			}
-		}
+      if (i->excess != sum) {
+	printf("ERROR: conservation constraint violated\n");
+	exit(2);
+      }
+    }
 
-		/* check if mincut is saturated */
-		aMax = dMax = 0;
-		for (l = buckets; l < buckets + n; l++) {
-			l->firstActive = sentinelNode;
-			l->firstInactive = sentinelNode;
-		}
-		globalUpdate();
-		if (source->d < n) {
-			printf("ERROR: the solution is not optimal\n");
-			exit(2);
-		}
+  /* check if mincut is saturated */
+  aMax = dMax = 0;
+  for (l = buckets; l < buckets + n; l++) {
+    l->firstActive = sentinelNode;
+    l->firstInactive = sentinelNode;
+  }
+  globalUpdate();
+  if (source->d < n) {
+    printf("ERROR: the solution is not optimal\n");
+    exit(2);
+  }
 
-		printf("c\nc Solution checks (feasible and optimal)\nc\n");
+  printf("c\nc Solution checks (feasible and optimal)\nc\n");
 #endif
 
 #ifdef PRINT_STAT
-		printf ("c pushes:      %10ld\n", pushCnt);
-		printf ("c relabels:    %10ld\n", relabelCnt);
-		printf ("c updates:     %10ld\n", updateCnt);
-		printf ("c gaps:        %10ld\n", gapCnt);
-		printf ("c gap nodes:   %10ld\n", gNodeCnt);
-		printf ("c\n");
+  printf ("c pushes:      %10ld\n", pushCnt);
+  printf ("c relabels:    %10ld\n", relabelCnt);
+  printf ("c updates:     %10ld\n", updateCnt);
+  printf ("c gaps:        %10ld\n", gapCnt);
+  printf ("c gap nodes:   %10ld\n", gNodeCnt);
+  printf ("c\n");
 #endif
 
 #ifdef PRINT_FLOW
-		printf ("c flow values\n");
-		forAllNodes(i) {
-			ni = nNode(i);
-			forAllArcs(i,a) {
-				na = nArc(a);
-				if ( cap[na] > 0 )
-					printf ( "f %7ld %7ld %12ld\n",
-					ni, nNode( a -> head ), cap[na] - ( a -> resCap )
-					);
-			}
-		}
-		printf("c\n");
+  printf ("c flow values\n");
+  forAllNodes(i) {
+    ni = nNode(i);
+    forAllArcs(i,a) {
+      na = nArc(a);
+      if ( cap[na] > 0 )
+	printf ( "f %7ld %7ld %12ld\n",
+		 ni, nNode( a -> head ), cap[na] - ( a -> resCap )
+		 );
+    }
+  }
+  printf("c\n");
 #endif
 
 #ifdef PRINT_CUT
-		globalUpdate();
-		printf ("c nodes on the sink side\n");
-		forAllNodes(j)
-			if (j->d < n)
-				printf("c %ld\n", nNode(j));
+  globalUpdate();
+  printf ("c nodes on the sink side\n");
+  forAllNodes(j)
+    if (j->d < n)
+      printf("c %ld\n", nNode(j));
 
 #endif
 
-		exit(0);
+  exit(0);
 
 }
 
+
 bool hi_pr::is_weak_source(node * v){
-	return v->d>=n;
+  // std::cout << "hi_pr::is_weak_source()" << std::endl;
+  return v->d>=n;
 };
 
+
 double hi_pr::cut_cost(){
-	double cost = flow;
-	node * i;
-	arc * a;
-	forAllNodes(i)
-		forAllArcs(i,a){
-			node * j = a->head;
-			if(is_weak_source(i) && !is_weak_source(j)){
-				cost+=a->resCap;
-			};
-	};
-	return cost;
+  // std::cout << "hi_pr::cut_cost()" << std::endl;
+  double cost = flow;
+  node * i;
+  arc * a;
+  forAllNodes(i)
+    forAllArcs(i,a){
+    node * j = a->head;
+    if(is_weak_source(i) && !is_weak_source(j)){
+      cost+=a->resCap;
+    };
+  };
+  return cost;
 };

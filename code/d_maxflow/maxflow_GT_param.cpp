@@ -19,11 +19,6 @@ void maxflow_GT_param::construct(const char *filename, std::vector<float> & weig
   dimacs_parser(filename, *this, 2);
 }
 
-// maxflow_GT_param::tflow maxflow_GT_param::maxflow()
-// {
-//   maxflow_GT::maxflow();
-// }
-
 
 maxflow_GT_param::tflow maxflow_GT_param::maxflow()
 {
@@ -48,7 +43,6 @@ maxflow_GT_param::tflow maxflow_GT_param::maxflow()
   // g.stageOne();
   // return g.flow;
 }
-
 
 
 void maxflow_GT_param::save_cut(){
@@ -238,6 +232,7 @@ return energy;
 
 
 int maxflow_GT_param::optimize_energy(std::vector<int> & indicator, std::vector<float> & trs_weights){
+    std::cout << "maxflow_GT_param::optimize_energy" << std::endl;
   /* Compute the indicator of the optimal set of features 
      Optimize (maxflow) the energy function
      H'(f) = \sum_{p} (- w'_p) f_p + \sum_{p,q} f_p (1-f_q) A_{pq}
@@ -404,6 +399,9 @@ int maxflow_GT_param::solve_for_fixed_size(int kval, float beta_min, float beta_
 	for (cur_sgt_it=solution_path.begin(); cur_sgt_it != solution_path.end(); cur_sgt_it++){
 	    nxt_sgt_it = cur_sgt_it;
 	    nxt_sgt_it++;
+	    if (nxt_sgt_it == solution_path.end()){
+		break;
+	    }
 	    cur_sgt = &*cur_sgt_it; // address of the object referenced by the iterator
 	    nxt_sgt = &*nxt_sgt_it;
 	    // std::cout << cur_sgt->beta2 << " ?< " << nxt_sgt->beta1 << std::endl;
@@ -420,7 +418,7 @@ int maxflow_GT_param::solve_for_fixed_size(int kval, float beta_min, float beta_
 	// search for a breakpoint between beta_i and beta_j
 	beta_i = cur_sgt->beta2;
 	beta_j = nxt_sgt->beta1;
-	// std::cout << "Search for bkpt btw " << beta_i << " and " << beta_j << std::endl;
+	std::cout << "Search for bkpt btw " << beta_i << " and " << beta_j << std::endl;
 	
 	f_i_size = cur_sgt->indicator_vector->size();
 	f_j_size = nxt_sgt->indicator_vector->size();

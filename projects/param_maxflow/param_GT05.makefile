@@ -3,7 +3,7 @@ OBJDIR  =../../bin/obj
 LIBDIR  = ../../bin/lib
 BINDIR  =../../bin/
 SRCROOT = ../../code
-LIBS = exttype d_maxflow maxflow_GT
+LIBS = exttype d_maxflow  maxflow_GT_param
 
 CC = g++ 
 CXX = $(CC)

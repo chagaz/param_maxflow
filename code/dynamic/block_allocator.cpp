@@ -170,7 +170,7 @@ namespace dynamic{
 			//get a new buffer
 			stack_allocator * buf = buffers.push_back();
 			int * p = (int*)malloc(buffer_size_sp);
-			if(!p)error_allocate(buffer_size_sp);
+			if(!p){std::cout << "A" << std::endl; error_allocate(buffer_size_sp);}
 			buf->attach(p,buffer_size_sp/sizeof(int));
 			took_mem(buf->capacity()*sizeof(int));
 		};
@@ -292,10 +292,11 @@ namespace dynamic{
 			big_size cap = round_up(size_bytes);
 			big_size size_allocate = cap+sizeof(int)+sizeof(size_t);
 			if(size_allocate>(big_size)(std::numeric_limits<std::size_t>::max()/2)){
+			    std::cout << "B" << std::endl;
 				error_allocate(size_allocate);
 			};
 			int * Q = (int*)malloc(size_t(size_allocate));
-			if(Q==0)error_allocate(size_allocate);
+			if(Q==0){std::cout << "C"<< std::endl; error_allocate(size_allocate);}
 			took_mem(size_t(cap));
 			P = (int*)((char*)Q+sizeof(int)+sizeof(size_t));
 			*(P-1) = sign_malloc;

@@ -62,6 +62,7 @@ public:
 	int allocDS();/*!< allocate datastructures, initialize related variables */
 	void init();
 	void checkMax();
+	void multiply(float lbd);
 	void globalUpdate();/*!< global update via backward breadth first search from the sink */
 	void stageTwo();/*!< second stage -- preflow to flow */
 	void stageOne();/*!< first stage  -- maximum preflow*/
