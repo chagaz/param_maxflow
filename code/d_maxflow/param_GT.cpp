@@ -145,7 +145,7 @@ void test_solve_for_fixed_size(maxflow_GT_param * solver){
        [0, 1, 2, 3, 4, 20, 32, 40, 48, 49],
        [0, 1, 2, 3, 4, 20, 21, 22, 32, 40, 48, 49]]
     */
-    solver->solve_for_fixed_size(9, bmin, bmax, my_solution);
+    solver->solve_for_fixed_size(11, bmin, bmax, my_solution);
     std::cout << "energy: " << my_solution.brkpt_or_h << std::endl;
 
     my_indicator = my_solution.indicator1;
