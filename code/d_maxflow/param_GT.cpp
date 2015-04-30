@@ -137,6 +137,7 @@ void test_solve_for_fixed_size(maxflow_GT_param * solver){
     float bmin = 1.;
     float bmax = 10.;
     int i;
+    int kval = 9;
     std::vector<int> my_indicator;
     /* Solution for kval = 11, beta_min = 1, beta_max = 10
        There is no solution of size 11
@@ -145,15 +146,36 @@ void test_solve_for_fixed_size(maxflow_GT_param * solver){
        [0, 1, 2, 3, 4, 20, 32, 40, 48, 49],
        [0, 1, 2, 3, 4, 20, 21, 22, 32, 40, 48, 49]]
     */
-    solver->solve_for_fixed_size(11, bmin, bmax, my_solution);
-    std::cout << "energy: " << my_solution.brkpt_or_h << std::endl;
+    solver->solve_for_fixed_size(kval, bmin, bmax, my_solution);
 
-    my_indicator = my_solution.indicator1;
-    std::cout << "indicator: ";
-    for (i=0; i<my_indicator.size(); i++){
-    	std::cout << my_indicator[i] << " ";
+    if (my_solution.true_solution) {
+	std::cout << "energy: " << my_solution.brkpt_or_h << std::endl;
+	
+	my_indicator = my_solution.indicator1;
+	std::cout << "indicator: ";
+	for (i=0; i<my_indicator.size(); i++){
+	    std::cout << my_indicator[i] << " ";
+	}
+	std::cout << std::endl;
     }
-    std::cout << std::endl;
+    else { 
+	std::cout << "No solution of size " << kval << std::endl;
+	std::cout << "breakpoint: " << my_solution.brkpt_or_h << std::endl;
+	
+	my_indicator = my_solution.indicator1;
+	std::cout << "indicator (smaller): ";
+	for (i=0; i<my_indicator.size(); i++){
+	    std::cout << my_indicator[i] << " ";
+	}
+	std::cout << std::endl;
+
+	my_indicator = my_solution.indicator2;
+	std::cout << "indicator (bigger): ";
+	for (i=0; i<my_indicator.size(); i++){
+	    std::cout << my_indicator[i] << " ";
+	}
+	std::cout << std::endl;
+    }
 
 
     // /* Solution for kval = 9, beta_min = 1, beta_max = 10
@@ -220,9 +242,9 @@ int main(int argc, char *argv[]){
 	// attach weights to solver
 	solver->weights = weights;
 	
-	// test_energy_computation(solver);
+	test_energy_computation(solver);
 
-	// test_optimize_h(solver);
+	test_optimize_h(solver);
 	
 	test_solve_for_fixed_size(solver);
 

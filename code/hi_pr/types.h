@@ -52,7 +52,7 @@ typedef /* bucket */
 typedef /* segment of a solution path */
   struct solutionSgt
 {
-  std::vector<int> * indicator_vector; /* indicator vector of selected features */
+  std::vector<int> indicator_vector; /* indicator vector of selected features */
   float beta1; /* left side of the segment */
   float beta2; /* right side of the segment */
 } solutionSgt;

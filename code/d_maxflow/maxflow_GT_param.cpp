@@ -216,15 +216,17 @@ float maxflow_GT_param::energy_function(std::vector<int> & indicator){
 	// std::cout << "node_j: "<< node_j << std::endl;
 	j = node_j->index;
 	// is node j NOT selected?
-	if (! std::binary_search(indicator.begin(), indicator.end(), j)){
-	  // if (g.cap[a->gCapIdx] != 0){
-	  //   std::cout << j << "\t";
-	  //   std::cout << "["<< g.cap[a->gCapIdx] << "]\t";
-	  // }
-	  energy += g.cap[a->gCapIdx];
+	if (j < g.n-1) { // do not use the links to the sink here
+	    if (! std::binary_search(indicator.begin(), indicator.end(), j)){
+		// if (g.cap[a->gCapIdx] != 0){ 
+		//     std::cout << j << "\t";
+		//     std::cout << "["<< g.cap[a->gCapIdx] << "]\t";
+		// }
+		energy += g.cap[a->gCapIdx];
+	    }
 	}
       }
-      //std::cout << std::endl;
+      // std::cout << std::endl;
     }
   }
 return energy;
@@ -232,7 +234,7 @@ return energy;
 
 
 int maxflow_GT_param::optimize_energy(std::vector<int> & indicator, std::vector<float> & trs_weights){
-    std::cout << "maxflow_GT_param::optimize_energy" << std::endl;
+    // std::cout << "maxflow_GT_param::optimize_energy" << std::endl;
   /* Compute the indicator of the optimal set of features 
      Optimize (maxflow) the energy function
      H'(f) = \sum_{p} (- w'_p) f_p + \sum_{p,q} f_p (1-f_q) A_{pq}
@@ -366,18 +368,18 @@ int maxflow_GT_param::solve_for_fixed_size(int kval, float beta_min, float beta_
     std::list<solutionSgt> solution_path; 
 
     solutionSgt segment;
-    segment.indicator_vector = &f_min;
+    segment.indicator_vector = f_min;
     segment.beta1 = beta_min;
     segment.beta2 = beta_min;
     solution_path.push_back(segment);
 
-    segment.indicator_vector = &f_max;
+    segment.indicator_vector = f_max;
     segment.beta1 = beta_max;
     segment.beta2 = beta_max;
     solution_path.push_back(segment);
 
     bool keep_going = true; 
-    bool srch_brkpt = false;
+    bool srch_brkpt;
     float beta_i, beta_j, beta_0;
     int f_i_size, f_j_size;
     std::vector<int> f_0;
@@ -396,6 +398,21 @@ int maxflow_GT_param::solve_for_fixed_size(int kval, float beta_min, float beta_
 	if (kill_me_now == 1000){
 	    return -1;
 	}
+	srch_brkpt = false;
+
+
+	// std::cout << "solution path: " << std::endl;
+	for (cur_sgt_it=solution_path.begin(); cur_sgt_it != solution_path.end(); cur_sgt_it++){
+	    cur_sgt = &*cur_sgt_it; // address of the object referenced by the iterator
+	    f_i = (cur_sgt->indicator_vector);
+	    // std::cout << "\t" << cur_sgt->beta1 << "\t" << cur_sgt->beta2 << "\t" << f_i.size() << std::endl;
+	    // std::cout << "\t f_i: ";
+	    // for (i=0; i<f_i_size; i++){
+	    // 	std::cout << f_i[i] << " ";
+	    // }
+	    // std::cout << std::endl;
+	}
+
 	for (cur_sgt_it=solution_path.begin(); cur_sgt_it != solution_path.end(); cur_sgt_it++){
 	    nxt_sgt_it = cur_sgt_it;
 	    nxt_sgt_it++;
@@ -406,6 +423,7 @@ int maxflow_GT_param::solve_for_fixed_size(int kval, float beta_min, float beta_
 	    nxt_sgt = &*nxt_sgt_it;
 	    // std::cout << cur_sgt->beta2 << " ?< " << nxt_sgt->beta1 << std::endl;
 	    if (cur_sgt->beta2 < nxt_sgt->beta1){
+		// std::cout << cur_sgt->beta2 << " < " << nxt_sgt->beta1 << std::endl;
 		srch_brkpt = true;
 		break;
 	    }
@@ -413,33 +431,60 @@ int maxflow_GT_param::solve_for_fixed_size(int kval, float beta_min, float beta_
 	if (! srch_brkpt){
 	    // no more breakpoints to insert
 	    keep_going = false;
+	    break;
 	}
 	
 	// search for a breakpoint between beta_i and beta_j
 	beta_i = cur_sgt->beta2;
 	beta_j = nxt_sgt->beta1;
-	std::cout << "Search for bkpt btw " << beta_i << " and " << beta_j << std::endl;
+	// std::cout << "Search for bkpt btw " << beta_i << " and " << beta_j << std::endl;
 	
-	f_i_size = cur_sgt->indicator_vector->size();
-	f_j_size = nxt_sgt->indicator_vector->size();
+	f_i_size = cur_sgt->indicator_vector.size();
+	f_j_size = nxt_sgt->indicator_vector.size();
 
 	// Compute beta_0, solution of H^{beta}(f_i) = H^{beta}(f_j)
 	denominator = f_i_size - f_j_size;
 	// std::cout << "denominator: " << denominator << std::endl;
 	if (denominator == 0){
+	    // f_i = (cur_sgt->indicator_vector);
+	    // f_j = (nxt_sgt->indicator_vector);
+	    // std::cout << "f_i: ";
+	    // for (i=0; i<f_i_size; i++){
+	    // 	std::cout << f_i[i] << " ";
+	    // }
+	    // std::cout << std::endl;
+
+	    // std::cout << "f_j: ";
+	    // for (i=0; i<f_j_size; i++){
+	    // 	std::cout << f_j[i] << " ";
+	    // }
+	    // std::cout << std::endl;
+
 	    // any beta_0 is solution
 	    beta_0 = beta_i;
 	}
 	else {
-	    f_i = *(cur_sgt->indicator_vector);
-	    f_j = *(nxt_sgt->indicator_vector);
+	    f_i = (cur_sgt->indicator_vector);
+	    f_j = (nxt_sgt->indicator_vector);
+	    // std::cout << "energy_function(f_j) " << energy_function(f_j) << std::endl;
+	    // std::cout << "energy_function(f_i) " << energy_function(f_i) << std::endl;
 	    beta_0 = (energy_function(f_j) - energy_function(f_i)) / (float)(denominator);
 	    // std::cout << "beta_0: " << beta_0 << std::endl;
 	}
+
+	// Deal with rounding errors
+	if ((beta_0 < beta_i) && ((beta_i - beta_0) < 1e-4)){
+	    beta_0 = beta_i;
+	}
+	else if ((beta_0 > beta_j) && ((beta_0 - beta_j) < 1e-4)){
+	    beta_0 = beta_j;
+	}
 	
-	// std::cout << "\t" << beta_i << " < " << beta_0 << " < " << beta_j << std::endl;
-	assert((("beta_i: %.3f\tbeta_0: %.3f\tbeta_j: %.3f", beta_i, beta_0, beta_j), 
-		((beta_i <= beta_0) && (beta_0 <= beta_j))));
+	if ((beta_i > beta_0) || (beta_0 > beta_j)){
+	    std::cout << "Problem with breakpoint value!" << std::endl;
+	    std::cout << "beta_i: " << beta_i << "\tbeta_0: " << beta_0 << "\tbeta_j: " << beta_j << std::endl;
+	    return -1;
+	}
 
 	if (beta_0 == beta_i){
 	    /* update I_j to be the union of I_j and [beta_i, beta_j]
@@ -453,6 +498,7 @@ int maxflow_GT_param::solve_for_fixed_size(int kval, float beta_min, float beta_
 	    cur_sgt->beta2 = beta_j;
 	}
 	else {
+	    // std::cout << "\t" << beta_i << " < " << beta_0 << " < " << beta_j << std::endl;
 	    // Compute f_0 which minimizes H^{beta_0}(f)
 	    f_0.erase(f_0.begin(), f_0.begin()+f_0.size()); // empty f_0
 	    for (int i=0; i<g.n-2; i++){
@@ -484,7 +530,8 @@ int maxflow_GT_param::solve_for_fixed_size(int kval, float beta_min, float beta_
 	    }
 	    else {
 		// insert [f_0, [beta_0, beta_0]] in between (i) and (j)
-		segment.indicator_vector = &f_0;
+		// std::cout << "\tbeta_0: " << beta_0 << "\tf_0.size(): " << f_0.size() << std::endl;
+		segment.indicator_vector = f_0;
 		segment.beta1 = beta_0;
 		segment.beta2 = beta_0;
 		solution_path.insert(nxt_sgt_it, segment);		
@@ -497,13 +544,13 @@ int maxflow_GT_param::solve_for_fixed_size(int kval, float beta_min, float beta_
     solution.true_solution = false;
     for (cur_sgt_it=solution_path.begin(); cur_sgt_it != solution_path.end(); cur_sgt_it++){
 	cur_sgt = &*cur_sgt_it; // address of the object referenced by the iterator
-	if (cur_sgt->indicator_vector->size() > kval){
+	if (cur_sgt->indicator_vector.size() > kval){
 	    solution.brkpt_or_h = cur_sgt->beta2;
-	    solution.indicator1 = *cur_sgt->indicator_vector;
+	    solution.indicator1 = cur_sgt->indicator_vector;
 	}
-	else if (cur_sgt->indicator_vector->size() < kval){
+	else if (cur_sgt->indicator_vector.size() < kval){
 	    assert(beta_0 == cur_sgt->beta1);
-	    solution.indicator2 = *cur_sgt->indicator_vector;
+	    solution.indicator2 = cur_sgt->indicator_vector;
 	    return 0;
 	}
     }
