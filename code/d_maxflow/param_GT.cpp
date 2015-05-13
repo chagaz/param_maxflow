@@ -192,17 +192,73 @@ void test_solve_for_fixed_size(maxflow_GT_param * solver){
     // std::cout << std::endl;
 }
 
+
+void solve(maxflow_GT_param * solver, float lbd, int kval, float bmin, float bmax){
+    // If solver was constructed from 
+    // ../test/W.dimacs and ../test/weights.txt
+    // and W was multiplied by 0.05
+    solver->g.multiply(lbd);
+    
+    solutionSz my_solution;
+    int i;
+    std::vector<int> my_indicator;
+    solver->solve_for_fixed_size(kval, bmin, bmax, my_solution);
+
+    if (my_solution.true_solution) {
+	std::cout << "A solution of size " << kval << std::endl;
+	std::cout << "energy: " << my_solution.brkpt_or_h << std::endl;
+	
+	my_indicator = my_solution.indicator1;
+	std::cout << "indicator: ";
+	for (i=0; i<my_indicator.size(); i++){
+	    std::cout << my_indicator[i] << " ";
+	}
+	std::cout << std::endl;
+    }
+    else { 
+	std::cout << "No solution of size " << kval << std::endl;
+	std::cout << "breakpoint: " << my_solution.brkpt_or_h << std::endl;
+	
+	my_indicator = my_solution.indicator1;
+	std::cout << "indicator (smaller): ";
+	for (i=0; i<my_indicator.size(); i++){
+	    std::cout << my_indicator[i] << " ";
+	}
+	std::cout << std::endl;
+
+	my_indicator = my_solution.indicator2;
+	std::cout << "indicator (bigger): ";
+	for (i=0; i<my_indicator.size(); i++){
+	    std::cout << my_indicator[i] << " ";
+	}
+	std::cout << std::endl;
+    }
+}
+
+
+
 int main(int argc, char *argv[]){
-  if (argc != 3){    
+  if (argc != 7){    
     std::cout << "ERROR Wrong number of arguments in main" << std::endl;
   }
   else
     {
       const char * ntwk_file, * weights_file;
+      float lbd; // multiplying coefficient for network weights
+      int kval;  // solution size
+      float bmin, bmax; // beta min and max
       ntwk_file = argv[1];
-      //solve(ntwk_file);
-
       weights_file = argv[2];
+      lbd = atof(argv[3]);
+      kval = atoi(argv[4]);
+      bmin = atof(argv[5]);
+      bmax = atof(argv[6]);
+
+      // std::cout << "lbd: " << lbd << std::endl;
+      // std::cout << "kval: " << kval << std::endl;
+      // std::cout << "bmin: " << bmin << std::endl;
+      // std::cout << "bmax: " << bmax << std::endl;
+
 
       // Read weights 
       std::vector<float> weights;
@@ -242,20 +298,24 @@ int main(int argc, char *argv[]){
 	// attach weights to solver
 	solver->weights = weights;
 	
-	test_energy_computation(solver);
+	// test_energy_computation(solver);
 
-	test_optimize_h(solver);
+	// test_optimize_h(solver);
 	
-	test_solve_for_fixed_size(solver);
+	// test_solve_for_fixed_size(solver);
 
+	solve(solver, lbd, kval, bmin, bmax);
 
 	// gettimeofday(&tbeginalgo, NULL);    
 
 	// gettimeofday(&tendalgo, NULL);
 	// texecalgo = (double)(1000 * (tendalgo.tv_sec - tbeginalgo.tv_sec) + ((tendalgo.tv_usec - tbeginalgo.tv_usec)/1000));
 	// debug::stream << "exec time for test = " << texecalgo << " ms\n";
+
 	solver->print_info(); // for some reason if you comment this out there's a compilation error
 
+	
+	
 	// solver->save_cut();
 	
 	delete solver;

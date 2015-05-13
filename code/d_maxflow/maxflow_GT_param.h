@@ -39,4 +39,4 @@ class maxflow_GT_param : public maxflow_solver, public dimacs_parser_callback{
 
 };
 
-#endif /* maxflow_GT_param_h */
+#endif /* maxflow_GT_param_ */
