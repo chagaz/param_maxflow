@@ -328,6 +328,7 @@ int maxflow_GT_param::solve_for_fixed_size(int kval, float beta_min, float beta_
     maxflow_GT_param::optimize_energy(f_min, weights_tmp);
 
     if (f_min.size() == kval){
+	std::cout << "f_min.size() == kval" << std::endl;
 	solution.true_solution = true;
 	solution.brkpt_or_h = maxflow_GT_param::energy_function(f_min);
 	solution.indicator1 = f_min;
@@ -341,6 +342,7 @@ int maxflow_GT_param::solve_for_fixed_size(int kval, float beta_min, float beta_
     optimize_energy(f_max, weights_tmp);
     
     if (f_max.size() == kval){
+	std::cout << "f_max.size() == kval" << std::endl;
 	solution.true_solution = true;
 	solution.brkpt_or_h = maxflow_GT_param::energy_function(f_max);
 	solution.indicator1 = f_max;
@@ -349,7 +351,8 @@ int maxflow_GT_param::solve_for_fixed_size(int kval, float beta_min, float beta_
     
     if (f_min.size() == f_max.size()){
 	// The solution path is only one segment
-	solution.true_solution == false;
+	std::cout << "f_min.size() == f_max.size()" << std::endl;
+	solution.true_solution = false;
 	solution.brkpt_or_h = beta_max;
 
 	std::vector<int> empty_solution;
@@ -391,15 +394,14 @@ int maxflow_GT_param::solve_for_fixed_size(int kval, float beta_min, float beta_
     solutionSgt *cur_sgt;
     solutionSgt *nxt_sgt;
 
-    int kill_me_now = 0;
+    // int kill_me_now = 0; // <-- use for debugging, shortens the loop length
 
     while (keep_going){
-	kill_me_now ++;
-	if (kill_me_now == 1000){
-	    return -1;
-	}
+	// kill_me_now ++;
+	// if (kill_me_now == 1000){
+	//     return -1;
+	// }
 	srch_brkpt = false;
-
 
 	// std::cout << "solution path: " << std::endl;
 	for (cur_sgt_it=solution_path.begin(); cur_sgt_it != solution_path.end(); cur_sgt_it++){
@@ -435,12 +437,27 @@ int maxflow_GT_param::solve_for_fixed_size(int kval, float beta_min, float beta_
 	}
 	
 	// search for a breakpoint between beta_i and beta_j
+	// unless f_i_size and f_j_size are both larger or both smaller than kval
 	beta_i = cur_sgt->beta2;
 	beta_j = nxt_sgt->beta1;
 	// std::cout << "Search for bkpt btw " << beta_i << " and " << beta_j << std::endl;
 	
 	f_i_size = cur_sgt->indicator_vector.size();
 	f_j_size = nxt_sgt->indicator_vector.size();
+	// std::cout << "f_i_size: " << f_i_size << "\tf_j_size: " << f_j_size << std::endl;
+	
+	if ((f_i_size - kval) * (f_j_size - kval) > 0){
+	    /* we're not interesting in finding a breakpoint here because it won't give us
+	       a solution of size kval.
+	       Hence update I_i to be the union of I_i and [beta_i, beta_j]
+	       ie. I_i from [..., beta_i] becomes [..., beta_j].
+	       This is artificial, not the true solution path.
+	    */
+	    // std::cout << "skip this bkpt" << std::endl;
+	    cur_sgt->beta2 = beta_j;
+	    continue;
+	}
+	    
 
 	// Compute beta_0, solution of H^{beta}(f_i) = H^{beta}(f_j)
 	denominator = f_i_size - f_j_size;
@@ -512,6 +529,7 @@ int maxflow_GT_param::solve_for_fixed_size(int kval, float beta_min, float beta_
 
 
 	    if (f_0.size() == kval){
+		// std::cout << "f_0.size() == kval" << std::endl;
 		solution.true_solution = true;
 		solution.brkpt_or_h = maxflow_GT_param::energy_function(f_0);
 		solution.indicator1 = f_0;
@@ -541,6 +559,7 @@ int maxflow_GT_param::solve_for_fixed_size(int kval, float beta_min, float beta_
     
     // No solution of the desired size was found
     beta_0 = (float)(-2^16);
+    // std::cout << "end reached" << std::endl;
     solution.true_solution = false;
     for (cur_sgt_it=solution_path.begin(); cur_sgt_it != solution_path.end(); cur_sgt_it++){
 	cur_sgt = &*cur_sgt_it; // address of the object referenced by the iterator

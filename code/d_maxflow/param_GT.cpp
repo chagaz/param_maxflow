@@ -200,6 +200,7 @@ void solve(maxflow_GT_param * solver, float lbd, int kval, float bmin, float bma
     solver->g.multiply(lbd);
     
     solutionSz my_solution;
+    my_solution.true_solution = false;
     int i;
     std::vector<int> my_indicator;
     solver->solve_for_fixed_size(kval, bmin, bmax, my_solution);
@@ -233,6 +234,8 @@ void solve(maxflow_GT_param * solver, float lbd, int kval, float bmin, float bma
 	}
 	std::cout << std::endl;
     }
+
+    // delete &my_solution;
 }
 
 
