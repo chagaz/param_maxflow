@@ -428,7 +428,8 @@ namespace dynamic{
 
 // void* operator new(std::size_t) throw(std::bad_alloc);
 
-void* operator new(size_t _Count)throw(std::bad_alloc){
+// void* operator new(size_t _Count)throw(std::bad_alloc){
+void* operator new(std::size_t _Count){
 	void * r;
 //#pragma omp critical (mem_allocation)
 	r = dynamic::memserver::get_global()->allocate(_Count);
@@ -436,13 +437,15 @@ void* operator new(size_t _Count)throw(std::bad_alloc){
 	//return malloc(_Count);
 };
 
-void operator delete(void* _Ptr) throw( ){
+//void operator delete(void* _Ptr) throw( ){
+void operator delete(void* _Ptr) {
 //#pragma omp critical (mem_allocation)
 	dynamic::memserver::get_global()->deallocate(_Ptr);
 	//free(_Ptr);
 };
 
-void operator delete[](void* _Ptr) throw( ){
+// void operator delete[](void* _Ptr) throw( ){
+void operator delete[](void* _Ptr){
 //#pragma omp critical (mem_allocation)
 	dynamic::memserver::get_global()->deallocate(_Ptr);
 	//free(_Ptr);
