@@ -152,9 +152,9 @@ namespace dynamic{
 	};
 };
 
-void* operator new(size_t _Count);
-void operator delete(void* _Ptr);
-void operator delete[](void* _Ptr);
+void* operator new(size_t _Count) throw(std::bad_alloc);
+void operator delete(void* _Ptr) throw();
+void operator delete[](void* _Ptr) throw();
 void * mmalloc(size_t size_bytes);
 void * mcalloc(size_t size_bytes);
 void * mrealloc(void * ptr, size_t new_size);

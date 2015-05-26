@@ -97,20 +97,21 @@ namespace dynamic{
 		return *(P-1);
 	};
 	__forceinline char * stack_allocator::allocate(int size_bytes){
-			//round size_bytes up to multiple of 4
-			if(size_bytes==0){
-			    perror("Allocating 0 bytes?\n");fflush(stdout);
-			    abort();
-			};
-			int size = (size_bytes+3)>>2;
-			if(cap_free()<size+overhead){//check if it fits
-				throw std::bad_alloc();
-			};
-			int * P = beg()-size;
-			block_size(P) = size;
-			mark_block_used(P);
-			_beg = P-overhead;
-			return (char*)P;
+	    //round size_bytes up to multiple of 4
+	    // std::cout << size_bytes << std::endl;
+	    if(size_bytes==0){
+		perror("Allocating 0 bytes?\n");fflush(stdout);
+		abort();
+	    };
+	    int size = (size_bytes+3)>>2;
+	    if(cap_free()<size+overhead){//check if it fits
+		throw std::bad_alloc();
+	    };
+	    int * P = beg()-size;
+	    block_size(P) = size;
+	    mark_block_used(P);
+	    _beg = P-overhead;
+	    return (char*)P;
 	};
 	__forceinline bool stack_allocator::deallocate(void * vP){
 			int* P = (int*)vP;
@@ -268,6 +269,8 @@ namespace dynamic{
 	};
 
 	void * block_allocator::allocate(size_t size_bytes){
+	    // std::cout << "---" << size_bytes << std::endl;
+	    // std::cout << "--->" << buffer_size << std::endl;
 		int * P;
 			++alloc_count;
 			if( !buffers.empty() && buffers.back().can_allocate(size_bytes)){//fits in the top buffer
@@ -428,20 +431,21 @@ namespace dynamic{
 
 // void* operator new(std::size_t) throw(std::bad_alloc);
 
-void* operator new(size_t _Count)throw(std::bad_alloc){
-// void* operator new(std::size_t _Count){
-	void * r;
-//#pragma omp critical (mem_allocation)
-	r = dynamic::memserver::get_global()->allocate(_Count);
-	return r;
-	//return malloc(_Count);
+void* operator new(size_t _Count) throw(std::bad_alloc){
+    //    std::cout << " new " << _Count << std::endl;
+    // void* operator new(std::size_t _Count){
+    void * r;
+    //#pragma omp critical (mem_allocation)
+    r = dynamic::memserver::get_global()->allocate(_Count);
+    return r;
+    //return malloc(_Count);
 };
 
 void operator delete(void* _Ptr) throw( ){
     //void operator delete(void* _Ptr) {
-//#pragma omp critical (mem_allocation)
-	dynamic::memserver::get_global()->deallocate(_Ptr);
-	//free(_Ptr);
+    //#pragma omp critical (mem_allocation)
+    dynamic::memserver::get_global()->deallocate(_Ptr);
+    //free(_Ptr);
 };
 
 void operator delete[](void* _Ptr) throw( ){

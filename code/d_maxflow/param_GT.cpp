@@ -71,10 +71,10 @@ void test_energy_computation(maxflow_GT_param * solver){
 
 void test_optimize_h(maxflow_GT_param * solver){
   // If solver was constructed from 
-  // ../data/simu4/W.dimacs and ../data/simu4/zscores.txt
+  // ../test/W.dimacs and ../test/weights.txt
   // and W was multiplied by 0.01
 
-  solver->g.multiply(0.05);
+  solver->g.multiply(0.01);
 
   std::vector<int> test_indicator;
   std::vector<float> test_weights;
@@ -257,10 +257,10 @@ int main(int argc, char *argv[]){
       bmin = atof(argv[5]);
       bmax = atof(argv[6]);
 
-      // std::cout << "lbd: " << lbd << std::endl;
-      // std::cout << "kval: " << kval << std::endl;
-      // std::cout << "bmin: " << bmin << std::endl;
-      // std::cout << "bmax: " << bmax << std::endl;
+      std::cout << "lbd: " << lbd << std::endl;
+      std::cout << "kval: " << kval << std::endl;
+      std::cout << "bmin: " << bmin << std::endl;
+      std::cout << "bmax: " << bmax << std::endl;
 
 
       // Read weights 

@@ -374,11 +374,15 @@ int maxflow_GT_param::solve_for_fixed_size(int kval, float beta_min, float beta_
     segment.indicator_vector = f_min;
     segment.beta1 = beta_min;
     segment.beta2 = beta_min;
+    // std::cout << segment.beta1 << " .. " << segment.beta2 << std::endl;
+    // std::cout << ":" << sizeof(segment) << std::endl;
     solution_path.push_back(segment);
 
     segment.indicator_vector = f_max;
     segment.beta1 = beta_max;
     segment.beta2 = beta_max;
+    // std::cout << segment.beta1 << " .. " << segment.beta2 << std::endl;
+    // std::cout << ":" << sizeof(segment) << std::endl;
     solution_path.push_back(segment);
 
     bool keep_going = true; 
@@ -447,13 +451,14 @@ int maxflow_GT_param::solve_for_fixed_size(int kval, float beta_min, float beta_
 	// std::cout << "f_i_size: " << f_i_size << "\tf_j_size: " << f_j_size << std::endl;
 	
 	if ((f_i_size - kval) * (f_j_size - kval) > 0){
-	    /* we're not interesting in finding a breakpoint here because it won't give us
+	    /* we're not interested in finding a breakpoint here because it won't give us
 	       a solution of size kval.
 	       Hence update I_i to be the union of I_i and [beta_i, beta_j]
 	       ie. I_i from [..., beta_i] becomes [..., beta_j].
 	       This is artificial, not the true solution path.
 	    */
-	    // std::cout << "skip this bkpt" << std::endl;
+	    // std::cout << "  " << f_i_size << " " << f_j_size << " " << kval << std::endl;
+	    // std::cout << "   skip this bkpt" << std::endl;
 	    cur_sgt->beta2 = beta_j;
 	    continue;
 	}
@@ -552,6 +557,8 @@ int maxflow_GT_param::solve_for_fixed_size(int kval, float beta_min, float beta_
 		segment.indicator_vector = f_0;
 		segment.beta1 = beta_0;
 		segment.beta2 = beta_0;
+		// std::cout << segment.beta1 << " .. " << segment.beta2 << std::endl;
+		// std::cout << ":" << sizeof(segment) << std::endl;
 		solution_path.insert(nxt_sgt_it, segment);		
 	    }
 	}
